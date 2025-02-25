@@ -364,6 +364,40 @@ docker compose -p kitchenpos up -d
 
 ### 상품 컨텍스트 (Product Context)
 
+```mermaid
+---
+title: Product Context
+---
+
+classDiagram
+    class Product {
+        + ID: UUID
+        + name: String
+        + price: BigDecimal
+    }
+
+    class ProductRepository {
+        + save(product: Product): Product
+        + findAll(): List<Product>
+    }
+
+    class ProductService {
+        + create(request: Product): Product
+        + changePrice(productId: Long, request: Product): Product
+        + findAll(): List<Product>
+    }
+
+    class ProductRestController {
+        + create(request: Product): Product
+        + changePrice(productId: Long, request: Product): Product
+        + findAll(): List<Product>
+    }
+
+    ProductRepository --> Product
+    ProductService --> ProductRepository
+    ProductRestController --> ProductService
+```
+
 - 요청한 `name`과 `price`로 `Product`을 등록한다.
     - 제약 조건
         - `Product`의 `price`은 0원 이상이어야 한다.
@@ -378,6 +412,85 @@ docker compose -p kitchenpos up -d
 - 등록된 `Product` 목록을 조회한다.
 
 ### 메뉴 컨텍스트 (Menu Context)
+
+```mermaid
+---
+title: Menu Context
+---
+
+classDiagram
+    class MenuGroup {
+        + ID: UUID
+        + name: String
+    }
+
+    class MenuGroupRepository {
+        + save(menuGroup: MenuGroup): MenuGroup
+        + findAll(): List<MenuGroup>
+        + findById(UUID): Optional<MenuGroup>
+    }
+
+    class MenuGroupService {
+        + create(request: MenuGroup): MenuGroup
+        + findAll(): List<MenuGroup>
+    }
+
+    class MenuGroupRestController {
+        + create(request: MenuGroup): MenuGroup
+        + findAll(): List<MenuGroup>
+    }
+
+    MenuGroupRepository --> MenuGroup
+    MenuGroupService --> MenuGroupRepository
+    MenuGroupRestController --> MenuGroupService
+
+    class MenuProduct {
+        + seq: Long
+        + product: Product
+        + quantity: long
+        + productId: UUID
+    }
+
+    class Menu {
+        + ID: UUID
+        + price: BigDecimal
+        + menuGroup: MenuGroup
+        + menuProducts: List<MenuProduct>
+        + name: String
+        + displayed: boolean
+        + menuGroupID: UUID
+    }
+
+    class MenuRepository {
+        + save(menu: Menu): Menu
+        + findAll(): List<Menu>
+        + findById(UUID): Optional<Menu>
+        + findAllByIn(List<UUID>): List<Menu>
+        + findAllByProductId(UUID): List<Menu>
+    }
+
+    class MenuService {
+        + create(request: Menu): Menu
+        + changePrice(menuId: UUID, request: Menu): Menu
+        + display(menuId: UUID): Menu
+        + hide(menuId: UUID): Menu
+        + findAll(): List<Menu>
+    }
+
+    class MenuRestController {
+        + create(request: Menu): Menu
+        + changePrice(menuId: UUID, request: Menu): Menu
+        + display(menuId: UUID): Menu
+        + hide(menuId: UUID): Menu
+        + findAll(): List<Menu>
+    }
+
+    MenuRepository --> Menu
+    MenuService --> MenuRepository
+    MenuRestController --> MenuService
+    Menu --> MenuGroup
+    Menu --> MenuProduct
+```
 
 #### 메뉴 그룹 (MenuGroup)
 
@@ -420,6 +533,118 @@ docker compose -p kitchenpos up -d
 
 ### 주문 컨텍스트 (Order Context)
 
+```mermaid
+---
+title: Order Context
+---
+
+classDiagram
+    class OrderTable {
+        + ID: UUID
+        + name: String
+        + numberOfGuests: int
+        + occupied: boolean
+    }
+
+    class OrderTableRepository {
+        + save(orderTable: OrderTable): OrderTable
+        + findAll(): List<OrderTable>
+        + findById(UUID): Optional<OrderTable>
+    }
+
+    class OrderTableService {
+        + create(request: OrderTable): OrderTable
+        + sit(orderTableId: UUID): OrderTable
+        + clear(orderTableId: UUID): OrderTable
+        + changeNumberOfGuests(orderTableId: UUID, request: OrderTable): OrderTable
+        + findAll(): List<OrderTable>
+    }
+
+    class OrderTableRestController {
+        + create(request: OrderTable): OrderTable
+        + sit(orderTableId: UUID): OrderTable
+        + clear(orderTableId: UUID): OrderTable
+        + changeNumberOfGuests(orderTableId: UUID, request: OrderTable): OrderTable
+        + findAll(): List<OrderTable>
+    }
+
+    OrderTableRepository --> OrderTable
+    OrderTableService --> OrderTableRepository
+    OrderTableRestController --> OrderTableService
+
+    class OrderLineItem {
+        + seq: Long
+        + menu: Menu
+        + quantity: long
+        + menuId: UUID
+        + price: BigDecimal
+    }
+
+    class Order {
+        + ID: UUID
+        + orderLineItems: List<OrderLineItem>
+        + type: OrderType
+        + status: OrderStatus
+        + orderDateTime: LocalDateTime
+        + orderLineItems: List<OrderLineItem>
+        + deliveryAddress: String
+        + orderTable: OrderTable
+        + orderTableId: UUID
+    }
+
+    class OrderRepository {
+        + save(order: Order): Order
+        + findAll(): List<Order>
+        + findById(UUID): Optional<Order>
+        + existsByOrderTableAndStatusNot(orderTable: OrderTable, status: OrderStatus): boolean
+    }
+
+    class OrderService {
+        + create(request: Order): Order
+        + accept(orderId: UUID): Order
+        + serve(orderId: UUID): Order
+        + startDelivery(orderId: UUID): Order
+        + completeDelivery(orderId: UUID): Order
+        + complete(orderId: UUID): Order
+        + findAll(): List<Order>
+    }
+
+    class OrderRestController {
+        + create(request: Order): Order
+        + accept(orderId: UUID): Order
+        + serve(orderId: UUID): Order
+        + startDelivery(orderId: UUID): Order
+        + completeDelivery(orderId: UUID): Order
+        + complete(orderId: UUID): Order
+        + findAll(): List<Order>
+    }
+
+    OrderRepository --> Order
+    OrderService --> OrderRepository
+    OrderRestController --> OrderService
+    Order --> OrderLineItem
+    Order --> OrderTable
+
+    class OrderType {
+        + EatIn
+        + TakeOut
+        + Delivery
+    }
+
+    class OrderStatus {
+        + Waiting
+        + Accepted
+        + Served
+        + Delivering
+        + Delivered
+        + Completed
+    }
+
+    Order --> OrderType
+    Order --> OrderStatus
+
+```
+
 #### 주문 테이블 (OrderTable)
 
 - 요청한 `name`으로 `OrderTable`을 등록한다. 동시에 고객 수를 0명으로 설정되고 `OrderTable` 상태는 빈 테이블로 설정된다.
@@ -452,6 +677,20 @@ docker compose -p kitchenpos up -d
 - 등록된 `Order` 목록을 조회한다.
 
 ##### 배달 주문 (Delivery Order)
+
+```mermaid
+---
+title: "배달 주문 (Delivery Order) flow"
+---
+
+stateDiagram-v2
+    [*] --> Waiting: 주문 등록
+    Waiting --> Accepted: 주문 접수
+    Accepted --> Served: 주문 서빙
+    Served --> Delivering: 배달 시작
+    Delivering --> Delivered: 배달 완료
+    Delivered --> Completed: 주문 완료
+```
 
 - 필수 요구사항
     - `Order` 타입은 배달(`Delivery`)이어야 한다.
@@ -487,6 +726,18 @@ docker compose -p kitchenpos up -d
 
 ##### 포장 주문 (Take Out Order)
 
+```mermaid
+---
+title: "포장 주문 (Take Out Order) flow"
+---
+
+stateDiagram-v2
+    [*] --> Waiting: 주문 생성
+    Waiting --> Accepted: 주문 접수
+    Accepted --> Served: 주문 서빙
+    Served --> Completed: 주문 완료
+```
+
 - 필수 요구사항
     - `Order` 타입은 포장(`Take Out`)이어야 한다.
 - 요청한 `OrderType`, `주문항목`으로 `Order`를 등록한다. 동시에 모든 `주문항목`을 등록한다. `Order`의 상태는 `Waiting`으로 설정되고 `Order`
@@ -509,6 +760,18 @@ docker compose -p kitchenpos up -d
         - `Order` 상태가 `Served`인 경우만 `Completed`로 변경할 수 있다.
 
 ##### 매장 식사 주문 (Eat In Order)
+
+```mermaid
+---
+title: "매장 식사 주문 (Eat In Order) flow"
+---
+
+stateDiagram-v2
+    [*] --> Waiting: 주문 생성
+    Waiting --> Accepted: 주문 접수
+    Accepted --> Served: 주문 서빙
+    Served --> Completed: 주문 완료
+```
 
 - 필수 요구사항
     - `Order` 타입은 매장 식사(`Eat In`)이어야 한다.
