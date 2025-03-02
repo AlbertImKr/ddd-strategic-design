@@ -271,13 +271,6 @@ docker compose -p kitchenpos up -d
 | 등록       | Create    | 메뉴 그룹을 등록한다                    |
 | 메뉴 그룹 목록 | FindAll   | 등록된 메뉴 그룹 목록을 조회한다             |
 
-#### 메뉴 상태 (Menu Displayed)
-
-| 한글명 | 영문명       | 설명                   |
-|-----|-----------|----------------------|
-| 표시  | Displayed | 메뉴가 시각적으로 보여지는 상태    |
-| 숨김  | Hidden    | 메뉴가 시각적으로 보여지지 않는 상태 |
-
 #### 메뉴 (Menu)
 
 | 한글명   | 영문명            | 설명                                                   |
@@ -291,6 +284,13 @@ docker compose -p kitchenpos up -d
 | 가격    | Price          | 가격                                                   |
 | 등록    | Create         | 메뉴를 등록한다                                             |
 | 가격 변경 | ChangePrice    | 메뉴의 가격을 변경한다                                         |
+
+#### 메뉴 상태 (Menu Displayed)
+
+| 한글명 | 영문명       | 설명                   |
+|-----|-----------|----------------------|
+| 표시  | Displayed | 메뉴가 시각적으로 보여지는 상태    |
+| 숨김  | Hidden    | 메뉴가 시각적으로 보여지지 않는 상태 |
 
 ### 주문 컨텍스트 (Order Context)
 
@@ -339,7 +339,7 @@ docker compose -p kitchenpos up -d
 | 포장    | Take Out | 포장 주문       |
 | 배달    | Delivery | 배달 주문       |
 
-#### 주문 (Order)
+#### 배달 주문 (Delivery Order)
 
 | 한글명   | 영문명                 | 설명                                                 |
 |-------|---------------------|----------------------------------------------------|
@@ -356,9 +356,37 @@ docker compose -p kitchenpos up -d
 | 아이디   | ID                  | 주문, 주문 항목, 주문 테이블 등의 고유 식별자 (ex. 1, 2, 3)          |
 | 수량    | Quantity            | 수량                                                 |
 | 가격    | Price               | 가격                                                 |
-| 주문 타입 | OrderType           | 주문의 타입 (ex. 매장 식사, 포장, 배달)                         |
-| 주문 상태 | OrderStatus         | 주문의 상태 (ex. 대기, 접수, 조리 완료, 배달 중, 배달 완료, 완료)        |
 | 배달 업체 | KitchenridersClient | 배달을 담당하는 업체                                        |
+
+#### 포장 주문 (Take Out Order)
+
+| 한글명   | 영문명           | 설명                                                 |
+|-------|---------------|----------------------------------------------------|
+| 주문 항목 | OrderLineItem | 주문에 포함된 메뉴 (ex. 후라이드 치킨 세트 1개, 콜라 1개)              |
+| 주문    | Order         | 매장에서 주문한 내역 (ex. 1번 테이블에서 후라이드 치킨 세트 1개, 콜라 1개 주문) |
+| 주문 시간 | OrderDateTime | 주문이 발생한 시간 (ex. 2021-07-01 12:00:00)               |
+| 등록    | Create        | 주문을 등록한다                                           |
+| 접수    | Accept        | 주문을 접수한다                                           |
+| 서빙    | Serve         | 주문을 서빙한다                                           |
+| 완료    | Complete      | 주문을 완료한다                                           |
+| 아이디   | ID            | 주문, 주문 항목, 주문 테이블 등의 고유 식별자 (ex. 1, 2, 3)          |
+| 수량    | Quantity      | 수량                                                 |
+| 가격    | Price         | 가격                                                 |
+
+#### 매장 식사 주문 (Eat In Order)
+
+| 한글명   | 영문명           | 설명                                                 |
+|-------|---------------|----------------------------------------------------|
+| 주문 항목 | OrderLineItem | 주문에 포함된 메뉴 (ex. 후라이드 치킨 세트 1개, 콜라 1개)              |
+| 주문    | Order         | 매장에서 주문한 내역 (ex. 1번 테이블에서 후라이드 치킨 세트 1개, 콜라 1개 주문) |
+| 주문 시간 | OrderDateTime | 주문이 발생한 시간 (ex. 2021-07-01 12:00:00)               |
+| 등록    | Create        | 주문을 등록한다                                           |
+| 접수    | Accept        | 주문을 접수한다                                           |
+| 서빙    | Serve         | 주문을 서빙한다                                           |
+| 완료    | Complete      | 주문을 완료한다                                           |
+| 아이디   | ID            | 주문, 주문 항목, 주문 테이블 등의 고유 식별자 (ex. 1, 2, 3)          |
+| 수량    | Quantity      | 수량                                                 |
+| 가격    | Price         | 가격                                                 |
 
 ## 모델링
 
@@ -398,18 +426,15 @@ classDiagram
     ProductRestController --> ProductService
 ```
 
-- 요청한 `name`과 `price`로 `Product`을 등록한다.
+- `Product`을 등록할 수 있다.
     - 제약 조건
         - `Product`의 `price`은 0원 이상이어야 한다.
         - `Product`의 `name`은 비어 있을 수 없다.
-        - `Product`의 `name`은 욕설, 비속어 등 부적절한 단어 포함 검사를 통과해야 한다. (외부 API 사용)
-- 요청한 `price`로 `Product`의 `price`을 변경한다.
+        - `Product`의 `name`은 욕설, 비속어 등 부적절한 단어가 포함할 수 없다. (외부 API 사용)
+- `Product`의 `price`을 변경할 수 있다.
     - 제약 조건
         - 변경할 `price`은 0원 이상이어야 한다.
-        - 변경 대상인 `Product`이 존재하여야 한다.
-    - 기타 사항
-        - `Product`을 포함된 `Menu`의 `price`이 해당 `Menu`에 포함된 `MenuProduct`의 `price` 합보다 비싸면 `Menu`의 상태를 숨김 상태로 변경한다.
-- 등록된 `Product` 목록을 조회한다.
+- `Product` 목록을 조회할 수 있다.
 
 ### 메뉴 컨텍스트 (Menu Context)
 
@@ -494,42 +519,38 @@ classDiagram
 
 #### 메뉴 그룹 (MenuGroup)
 
-- 요청한 `name`으로 `MenuGroup`을 등록한다.
+- `MenuGroup`을 등록할 수 있다.
     - 제약 조건
         - `MenuGroup`의 `name`은 비어 있을 수 없다.
-- 등록된 `MenuGroup` 목록을 조회한다.
+- 등록된 `MenuGroup` 목록을 조회할 수 있다.
 
 #### 메뉴 상품 (MenuProduct)
 
-- 요청한 `name`, `price`, `quantity`, `Product`로 `MenuProduct`을 등록한다.
+- `MenuProduct`을 등록할 수 있다.
     - 제약 조건
         - `MenuProduct`의 `quantity`은 0개 이상이어야 한다.
         - `MenuProduct`의 `Product`은 존재하여야 한다.
+        - `MenuProduct`의 `name`과 `price`를 포함하고 있어야 한다.
 
 #### 메뉴 (Menu)
 
-- 요청한 `price`, `MenuGroup`, `MenuProduct`, `name`, `메뉴 상태`로 `Menu`을 등록한다. 동시에 포함된 모든 `MenuProduct`을 등록한다.
+- `Menu`을 등록할 수 있다.
     - 제약 조건
         - `Menu`의 `price`은 0원과 같거나 이상이어야 한다.
-        - `Menu`의 `MenuGroup`은 존재하여야 한다.
+        - `Menu`의 `MenuGroup`이 포함되어야 한다.
         - `Menu`의 `MenuProduct`은 1개 이상 포함되어야 한다.
-        - `Menu`의 `MenuProduct`은 `Product`을 포함하고 있어야 한다.
         - `Menu`의 `price`가 전체 `MenuProduct`의 `price` 합보다 같거나 작아야 한다.
         - `Menu`의 `name`은 비어 있을 수 없다.
         - `Menu`의 `name`은 욕설, 비속어 등 부적절한 단어 포함 검사를 통과해야 한다.
-- 요청한 `price`로 `Menu`의 `price`을 변경한다.
+- `Menu`의 `price`을 변경할 수 있다.
     - 제약 조건
         - 변경할 `price`은 0원과 같거나 이상이어야 한다.
-        - `Menu`가 존재하여야 한다.
         - 변경할 `price`이 포함된 `MenuProduct`의 `price` 합보다 같거나 작아야 한다.
-- `Menu`을 표시 상태로 변경한다.
+- `Menu`을 표시 상태로 변경할 수 있다.
     - 제약 조건
-        - `Menu`가 존재하여야 한다.
         - `Menu`의 `price`가 포함된 `MenuProduct`의 `price` 합보다 비싸면 안된다.
-- `Menu`을 숨김 상태로 변경한다.
-    - 제약 조건
-        - `Menu`가 존재하여야 한다.
-- 등록된 `Menu` 목록을 조회한다.
+- `Menu`을 숨김 상태로 변경할 수 있다.
+- 등록된 `Menu` 목록을 조회할 수 있다.
 
 ### 주문 컨텍스트 (Order Context)
 
@@ -647,26 +668,22 @@ classDiagram
 
 #### 주문 테이블 (OrderTable)
 
-- 요청한 `name`으로 `OrderTable`을 등록한다. 동시에 고객 수를 0명으로 설정되고 `OrderTable` 상태는 빈 테이블로 설정된다.
+- `OrderTable`을 등록할수 있다. 동시에 고객 수를 0명으로 테이블 상태는 빈 테이블로 설정된다.
     - 제약 조건
-        - `OrderTable`의 `name`은 비어 있을 수 없다.
-- `OrderTable`을 사용하면 `OrderTable` 상태가 주문 중으로 변경된다.
+        - `OrderTable`의 `name`은 비어 있을 수 없다
+- `OrderTable` 상태를 주문 중으로 변경할 수 있다.
+- `OrderTable` 상태가 빈 테이블 상태로 변경할 수 있다. 동시에 고객 수를 0명으로 설정한다.
     - 제약 조건
-        - `OrderTable`이 존재하여야 한다.
-- `OrderTable`을 비우면 `OrderTable` 상태가 빈 테이블로 변경된다. 동시에 고객 수가 0명으로 변경된다.
-    - 제약 조건
-        - `OrderTable`이 존재하여야 한다.
         - `OrderTable`에 포함된 주문이 모두 완료 상태여야 한다.
-- `OrderTable`의 고객 수를 변경한다.
+- `OrderTable`의 고객 수를 변경할 수 있다.
     - 제약 조건
         - 변경할 고객 수는 0명과 같거나 이상이어야 한다.
-        - `OrderTable`이 존재하여야 한다.
         - `OrderTable` 상태가 주문 중인 경우만 고객 수를 변경할 수 있다.
-- 등록된 `OrderTable` 목록을 조회한다.
+- 등록된 `OrderTable` 목록을 조회할 수 있다.
 
 #### 주문 항목 (OrderLineItem)
 
-- 요청한 `Menu`으로 `OrderLineItem`을 등록한다.
+- `OrderLineItem`을 등록할 수 있다.
     - 제약 조건
         - `OrderLineItem`의 `Menu`는 존재하여야 한다.
         - `OrderLineItem`의 `Menu`는 표시 상태여야 한다.
@@ -674,7 +691,7 @@ classDiagram
 
 #### 주문 (Order)
 
-- 등록된 `Order` 목록을 조회한다.
+- 등록된 `Order` 목록을 조회할 수 있다.
 
 ##### 배달 주문 (Delivery Order)
 
@@ -694,34 +711,28 @@ stateDiagram-v2
 
 - 필수 요구사항
     - `Order` 타입은 배달(`Delivery`)이어야 한다.
-- 요청한 `OrderType`, `주문항목`, `DeliveryAddress`로 `Order`를 등록한다. 동시에 모든 `주문항목`을 등록한다. `Order`
-  상태는 `Waiting`으로 설정되고 `Order` 주문 시간은 생성 시간으로 설정된다.
+- `Order`를 등록할 수 있다. 등록된 `Order`상태는 `Waiting`으로  `Order` 주문 시간은 생성 시간으로 설정된다.
     - 제약 조건
         - `Order`에 `주문항목`이 포함되어야 한다.
         - `주문항목`의 개수와 포함된 `Menu` 개수가 일치해야 한다.
         - `주문항목`의 `quantity`은 0개보다 커야 한다.
         - `Order`에 포함된 `주문항목`의 `Menu` 수량이 0개보다 커야 한다. (> 0)
         - `DeliveryAddress`는 비어 있을 수 없다.
-- `Order`를 접수한다. `Order`의 상태는 `Accepted`로 변경된다.
+- `Order`를 접수할 수 있다. `Order`의 상태는 `Accepted`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Waiting`이여야 한다.
         - `KitchenridersClient`에 배달을 요청한다. (외부 API 호출)
-- `Order`를 서빙한다. `Order`의 상태는 `Served`로 변경된다.
+- `Order`를 서빙할 수 있다. `Order`의 상태는 `Served`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Accepted`이여야 한다.
-- `Order`를 배달 시작한다. `Order`의 상태는 `Delivering`로 변경된다.
+- `Order`를 배달 시작할 수 있다. `Order`의 상태는 `Delivering`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Served`인 경우만 `Delivering`로 변경할 수 있다.
-- `Order`를 배달 완료한다. `Order`의 상태는 `Delivered`로 변경된다.
+- `Order`를 배달 완료할 수 있다. `Order`의 상태는 `Delivered`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - 주문 상태가 `Delivering`인 경우만 `Delivered`로 변경할 수 있다.
-- `Order`를 완료한다. `Order`의 상태는 `Completed`로 변경된다.
+- `Order`를 완료할 수 있다. `Order`의 상태는 `Completed`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - 주문 상태가 `Delivered`인 경우만 `Completed`로 변경할 수 있다.
 
 ##### 포장 주문 (Take Out Order)
@@ -740,23 +751,19 @@ stateDiagram-v2
 
 - 필수 요구사항
     - `Order` 타입은 포장(`Take Out`)이어야 한다.
-- 요청한 `OrderType`, `주문항목`으로 `Order`를 등록한다. 동시에 모든 `주문항목`을 등록한다. `Order`의 상태는 `Waiting`으로 설정되고 `Order`
-  의 주문 시간은 생성 시간으로 설정된다.
+- `Order`를 등록할 수 있다. `Order` 상태는 `Waiting`으로 설정되고 `Order` 주문 시간은 생성 시간으로 설정된다.
     - 제약 조건
         - `Order`에 `주문항목`이 포함되어야 한다.
         - `주문항목`의 `Menu` 수량은 0개보다 커야 한다.
         - `주문항목`의 개수와 포함된 `Menu` 개수가 일치해야 한다.
-- `Order`를 접수한다. `Order`의 상태는 `Accepted`로 변경된다.
+- `Order`를 접수할 수 있다. `Order`의 상태는 `Accepted`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Waiting`이여야 한다.
-- `Order`를 서빙한다. `Order`의 상태는 `Served`로 변경된다.
+- `Order`를 서빙할 수 있다. `Order`의 상태는 `Served`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Accepted`이여야 한다.
-- `Order`를 완료한다. `Order`의 상태는 `Completed`로 변경된다.
+- `Order`를 완료할 수 있다. `Order`의 상태는 `Completed`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Served`인 경우만 `Completed`로 변경할 수 있다.
 
 ##### 매장 식사 주문 (Eat In Order)
@@ -775,26 +782,21 @@ stateDiagram-v2
 
 - 필수 요구사항
     - `Order` 타입은 매장 식사(`Eat In`)이어야 한다.
-- 요청한 `OrderType`, `주문항목`, `OrderTable`으로 `Order`를 등록한다. 동시에 모든 `주문항목`을 등록한다. `Order` 상태는 `Waiting`으로 설정되고 `Order` 주문
-  시간은 생성 시간으로 설정된다. `Order`에 포함된 `OrderTable` 상태는 주문 중으로 변경된다.
+- `Order`를 등록할 수 있다. `Order` 상태는 `Waiting`으로 설정되고 `Order` 주문 시간은 생성 시간으로 설정된다.
     - 제약 조건
         - `Order`에 `주문항목`이 포함되어야 한다.
         - `주문항목`의 `Menu` 수량은 제한이 없다.
         - `주문항목`의 개수와 포함된 `Menu` 개수가 일치해야 한다.
         - `Order`에 포함된 `OrderTable`이 존재하여야 한다.
         - `OrderTable` 상태가 빈 테이블이여야 한다.
-- `Order`를 접수한다. `Order`의 상태는 `Accepted`로 변경된다.
+- `Order`를 접수할 수 있다. `Order`의 상태는 `Accepted`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Waiting`이여야 한다.
-- `Order`를 서빙한다. `Order`의 상태는 `Served`로 변경된다.
+- `Order`를 서빙할 수 있다. `Order`의 상태는 `Served`로 변경된다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Accepted`이여야 한다.
-- `Order`를 완료한다. `Order`의 상태는 `Completed`로 변경된다. `OrderTable`의 모든 주문이 완료 상태인 경우 `OrderTable`을 비우며 `OrderTable`의 인원 수를
-  0명으로 변경한다.
+- `Order`를 완료할 수 있다. `Order`의 상태는 `Completed`로 변경된다. 한다. `OrderTable`의 모든 주문을 체크하여 모두 완료 상태인 경우 `OrderTable`을 비운다.
     - 제약 조건
-        - `Order`이 존재하여야 한다.
         - `Order` 상태가 `Served`인 경우만 `Completed`로 변경할 수 있다.
 
 
