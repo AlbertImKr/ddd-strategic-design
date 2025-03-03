@@ -1,9 +1,9 @@
 package kitchenpos.application;
 
-import kitchenpos.order.Order;
-import kitchenpos.order.OrderRepository;
-import kitchenpos.order.OrderStatus;
-import kitchenpos.order.OrderTable;
+import kitchenpos.order.domain.Order;
+import kitchenpos.order.domain.OrderRepository;
+import kitchenpos.order.domain.OrderStatus;
+import kitchenpos.order.domain.OrderTable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
